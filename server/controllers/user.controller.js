@@ -54,3 +54,40 @@ export const delete_user = async (req,res) => {
         return res.status(400).json({message:"Error in deleting the User"+error.message});
     }
 }
+
+
+export const savedPost = async (req,res) => {
+    const {postId} = req.body;
+    const {userid} = req.user;
+    try {
+        const save_post = await prisma.SavedPost.findUnique({
+            where:{
+                userId_postId:{
+                    userId: tokenUserId,
+                    postId,
+                }
+            }
+        })
+
+        if(savedPost){
+            await prisma.SavedPost.delete({
+                where:{
+                    id:postId
+                }
+            })
+
+            return res.status(200).json({message:"Post removed from saved list"});
+        }else{
+            await prisma.SavedPost.create({
+                data:{
+                    userId: tokenUserId,
+                    postId
+                }
+            })
+            return res.status(200).json({message:"Post saved to saved list"});
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({message:"Error in saving the post"+error.message});
+    }
+}
