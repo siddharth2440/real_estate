@@ -22,6 +22,8 @@ model User {
   createdAt  DateTime    @default(now())
   posts      Post[]      @relation("user")
   savedPosts SavedPost[] @relation("user_post_relation")
+  chats      Chat[]      @relation(fields: [chatIds], references: [id])
+  chatIds    String[]    @db.ObjectId
 }
 
 model Post {
@@ -78,4 +80,23 @@ model SavedPost {
   createdAt DateTime @default(now())
 
   @@unique([userId, postId])
+}
+
+model Chat {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  users       User[]    @relation(fields: [userIds], references: [id]) // that string is used to distinguish from other relation so that we can use
+  userIds     String[]  @db.ObjectId
+  seenBy      String[]  @db.ObjectId
+  createdAt   DateTime  @default(now())
+  messages    Message[] @relation("messages")
+  lastMessage String?
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  text      String
+  createdAt DateTime @default(now())
+  chat      Chat     @relation("messages", fields: [chatId], references: [id])
+  chatId    String   @db.ObjectId
 }
